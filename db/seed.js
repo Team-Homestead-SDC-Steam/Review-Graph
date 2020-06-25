@@ -1,27 +1,42 @@
 const connection = require('./connection.js')
-const fs = require('fs')
 
 // a flexible randomizer that takes arrays or numbers and returns a random element from that range
 var rnd = n => Array.isArray(n) ? n[ rnd(n.length) - 1] : Math.floor( Math.random() * n ) + 1
 
-var seed_values = () => {
+var seedValues = () => {
   var values = '';
-  // MySQL Date format = YYYY-MM-DD
-  for( var game_id = 1; game_id <= 100; game_id++ ) {
-    var current_day = new Date();
-    var pos_range = rnd(20) + rnd(20);
-    var neg_range = rnd(20) - rnd(10); 
-    if ( neg_range < 3 ) neg_range = 3;
+
+  // do this for each of the first 100 games, by gameID (1-100)
+  for( var gameID = 1; gameID <= 100; gameID++ ) {
+
+    // start from today
+    var currentDay = new Date();
+
+    // for each game, set up a range/ratio for scores to inhabit
+    var posRange = rnd(20) + rnd(20);
+    var negRange = rnd(20) - rnd(10); 
+
+    // put a floor of 3 on negative reviews, in case randomization does something unexpected
+    if ( negRange < 3 ) negRange = 3;
+
+    // start from today's date and go back 365 days
     for ( var past = 0; past < 365 ; past++ ) {
+
+      // INSERT statement looks like this:
       // INSERT into reviews_graph (gameid, date, positive, negative) VALUES ...
-      values += `(${game_id},'${current_day.toISOString().split("T")[0]}',${rnd(pos_range)},${rnd(neg_range)}),`
-      current_day.setDate( current_day.getDate() - 1 )
+      values += `(${gameID},'${currentDay.toISOString().split("T")[0]}',${rnd(posRange)},${rnd(negRange)}),`
+      // [date].toISOString().split("T")[0] translates a date into MySQL date format (YYYY-MM-DD)
+
+      // shift one day into the past and continue
+      currentDay.setDate( currentDay.getDate() - 1 )
     }
   }
-  //console.log ( values );
+
+  // strip off the last extraneous comma
   return values.slice(0,-1);
 }
 
+// run each of these lines in order
 var sql = [
   `DROP DATABASE IF EXISTS steam;`,
   `CREATE DATABASE steam;`,
@@ -33,10 +48,12 @@ var sql = [
     positive int,
     negative int
   );`,
-  `INSERT into reviews_graph (gameid, date, positive, negative) VALUES ${ seed_values() };`
+  `INSERT into reviews_graph (gameid, date, positive, negative) VALUES ${ seedValues() };`
 ]
 
 console.log( 'Beginning seed script for reviews_graph')
+
+// convert this array of SQL statements into a set of ordered Promises
 Promise.all( 
   sql.map( (sqlText) => {
       new Promise( (resolve, reject) => { 
@@ -52,6 +69,8 @@ Promise.all(
 connection.end( () => { console.log('Connection closed.') });
 
 /*
+
+SQL for querying this dataset:
 
 SELECT 
 SUM(positive) as pos, 
