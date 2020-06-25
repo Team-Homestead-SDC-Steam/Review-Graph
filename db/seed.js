@@ -7,11 +7,14 @@ var rnd = n => Array.isArray(n) ? n[ rnd(n.length) - 1] : Math.floor( Math.rando
 var seed_values = () => {
   var values = '';
   // MySQL Date format = YYYY-MM-DD
-  for( var gameid = 1; gameid <= 100; gameid++ ) {
+  for( var game_id = 1; game_id <= 100; game_id++ ) {
     var current_day = new Date();
+    var pos_range = rnd(20) + rnd(20);
+    var neg_range = rnd(20) - rnd(10); 
+    if ( neg_range < 3 ) neg_range = 3;
     for ( var past = 0; past < 365 ; past++ ) {
       // INSERT into reviews_graph (gameid, date, positive, negative) VALUES ...
-      values += `(${gameid},'${current_day.toISOString().split("T")[0]}',${rnd(40)},${rnd(5)}),`
+      values += `(${game_id},'${current_day.toISOString().split("T")[0]}',${rnd(pos_range)},${rnd(neg_range)}),`
       current_day.setDate( current_day.getDate() - 1 )
     }
   }
@@ -80,7 +83,7 @@ negative as neg
 FROM reviews_graph
 WHERE date >= CURDATE()-30
 AND date <= CURDATE()
-AND gameid = 1
+AND gameid = 2
 ORDER BY date;
 
 */
