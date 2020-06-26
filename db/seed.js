@@ -1,4 +1,6 @@
-const connection = require('./connection.js')
+var mysql = require('mysql');
+var config = require('./config');
+var db = mysql.createConnection( config );
 
 // a flexible randomizer that takes arrays or numbers and returns a random element from that range
 var rnd = n => Array.isArray(n) ? n[ rnd(n.length) - 1] : Math.floor( Math.random() * n ) + 1
@@ -38,9 +40,9 @@ var seedValues = () => {
 
 // run each of these lines in order
 var sql = [
-  `DROP DATABASE IF EXISTS steam;`,
-  `CREATE DATABASE steam;`,
+  `CREATE DATABASE IF NOT EXISTS steam;`,
   `USE steam;`,
+  `DROP TABLE IF EXISTS reviews_graph;`,
   `CREATE TABLE reviews_graph (
     id int auto_increment primary key,
     gameid int not null,
@@ -57,7 +59,7 @@ console.log( 'Beginning seed script for reviews_graph')
 Promise.all( 
   sql.map( (sqlText) => {
       new Promise( (resolve, reject) => { 
-        connection.query( sqlText, (err, result, fields) => {
+        db.query( sqlText, (err, result, fields) => {
           // console.log('\nExecuting sql: ' + sqlText + '\n');
           if (err) throw err;
         })
@@ -66,7 +68,7 @@ Promise.all(
 )
 .then(values => { console.log('Data generated successfully.') })
 .catch(error => { console.error(error.message) })
-connection.end( () => { console.log('Connection closed.') });
+db.end( () => { console.log('Connection closed.') });
 
 /*
 
