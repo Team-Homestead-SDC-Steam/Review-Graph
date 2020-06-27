@@ -30,7 +30,7 @@ app.get('/api/reviewcount/recent/:gameId', (req, res) => {
                   + 'FROM reviews_graph WHERE date >= CURDATE()-30 AND date <= CURDATE() '
                   + `AND gameid = ${req.params.gameId};`;
   db.query(sqlText, (err, result) => {
-    if (err) throw err;
+    if (err) { res.status(500).json({ error: `Internal server error: ${err}` }); }
     const row = result[0];
     const { pos } = row;
     const tot = pos + row.neg;
@@ -46,7 +46,7 @@ app.get('/api/reviewcount/detail/:gameId', (req, res) => {
               + `WHERE gameid = ${req.params.gameId} GROUP BY month ORDER BY month;`;
 
   db.query(sqlText, (err, result) => {
-    if (err) throw err;
+    if (err) { res.status(500).json({ error: `Internal server error: ${err}` }); }
     res.json(`{ [ ${result.map((row) => `{ month: '${row.month}', pos: ${row.pos}, neg: ${row.neg} }`).slice(0, -1)} ] }`);
     // ex. { [ { month: '2019-10-01', positive: 4720, negative: 1591} ... ] }
   });
@@ -59,7 +59,7 @@ app.get('/api/reviewcount/recent/detail/:gameId', (req, res) => {
                 + `AND gameid = ${req.params.gameId} GROUP BY day ORDER BY day;`;
 
   db.query(sqlText, (err, result) => {
-    if (err) throw err;
+    if (err) { res.status(500).json({ error: `Internal server error: ${err}` }); }
     res.json(`{ [ ${result.map((row) => `{ day: '${row.day}', pos: ${row.pos}, neg: ${row.neg} }`).slice(0, -1)} ] }`);
     // ex. {  [ {day: '2020-07-01', positive: 133, negative: 2}, … ] }
   });
