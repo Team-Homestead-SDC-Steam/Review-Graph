@@ -84,8 +84,7 @@ SELECT
 SUM(positive) as pos,  
 SUM(negative) as neg 
 FROM reviews_graph 
-WHERE date >= CURDATE()-30 
-AND date <= CURDATE() 
+c
 AND gameid = 1;
 
 SELECT 

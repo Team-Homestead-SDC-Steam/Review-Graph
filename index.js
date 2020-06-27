@@ -1,4 +1,5 @@
 const db = require('./db/connection.js');
+const utils = require('./utils.js');
 const express = require('express');
 const app = express();
 const port = 3001;
@@ -7,15 +8,15 @@ app.listen(port, () => console.log(`Steam reviews service. listening at http://l
 app.use(express.static('./client/dist'));
 
 
-// tool: return summary text from %
-var rating = per => 
-[ { min: 95, text:'Overhwelmingly Positive' },
-  { min: 80, text:'Very Positive' },
-  { min: 70, text:'Mostly Positive' },
-  { min: 40, text:'Mixed' },
-  { min: 20, text:'Mostly Negative' },
-  { min: 0, text:'Very Negative' } ]
-  .find( row => per >= row['min'] )['text'];
+// // tool: return summary text from %
+// var rating = per => 
+// [ { min: 95, text:'Overhwelmingly Positive' },
+//   { min: 80, text:'Very Positive' },
+//   { min: 70, text:'Mostly Positive' },
+//   { min: 40, text:'Mixed' },
+//   { min: 20, text:'Mostly Negative' },
+//   { min: 0, text:'Very Negative' } ]
+//   .find( row => per >= row['min'] )['text'];
 
 
 app.get('/api/reviewcount/:gameId', ( req, res ) => {
@@ -24,13 +25,13 @@ app.get('/api/reviewcount/:gameId', ( req, res ) => {
                 `FROM reviews_graph WHERE gameid = ${ req.params.gameId };`;
 
   db.query( sqlText, ( err, result, fields ) => {
-      if (err) throw err;
+      if (err) { throw err; res.status(500).json({ error: 'Internal server error' }) }
       var row = result[0],
           pos = row.pos, 
           neg = row.neg, 
           tot = pos + neg, 
           per = Math.floor( pos / tot * 100 ); 
-      res.send( `{ summary: '${rating(per)}', percent: ${per}, positive: ${pos}, negative: ${neg}, total: ${tot} }` )
+      res.send( `{ summary: '${utils.rating(per)}', percent: ${per}, positive: ${pos}, negative: ${neg}, total: ${tot} }` )
       // ex. { summary: 'Positive', percent: 82, positive: 4677, negative: 1218, total: 77856 }
   })
 
@@ -49,7 +50,7 @@ app.get('/api/reviewcount/recent/:gameId', ( req, res ) => {
             pos = row.pos, 
             tot = pos + row.neg, 
             per = Math.floor( pos / tot * 100 ); 
-        res.send( `{ summary: '${rating(per)}', percent: ${per}, total: ${tot} }` )
+        res.send( `{ summary: '${utils.rating(per)}', percent: ${per}, total: ${tot} }` )
         // ex. { summary: 'Positive', percent: 82, positive: 4677, negative: 1218, total: 77856 }
     })
 
