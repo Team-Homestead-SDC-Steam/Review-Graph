@@ -1,11 +1,12 @@
-var mysql = require('mysql');
-var config = require('./config');
+const mysql = require('mysql');
+const config = require('./config');
 
-var connection = mysql.createConnection( config );
+const connection = mysql.createConnection(config);
 
-connection.connect(function(err) {
+connection.connect((err) => {
   if (err) throw err;
-  console.log("Connected to MySQL Database");
+  // eslint-disable-next-line no-console
+  console.log('Connected to MySQL Database');
 });
 
 module.exports = connection;

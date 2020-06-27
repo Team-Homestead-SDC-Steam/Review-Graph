@@ -1,39 +1,63 @@
-const express = require('express')
-const app = express()
-const port = 3001
+/* eslint-disable no-console */
+const express = require('express');
+const db = require('./db/connection.js');
+const utils = require('./utils.js');
 
-// app.get('/', (req, res) => res.send('Steam reviews service?'))
+const app = express();
+const port = 3001;
 
-app.listen(port, () => console.log(`Steam reviews service. listening at http://localhost:${port}`))
+app.listen(port, () => console.log(`Steam reviews service. listening at http://localhost:${port}`));
 app.use(express.static('./client/dist'));
 
-// SAMPLE API CALLS
-
-app.get('/api/reviewcount/all/summary/:productId', ( req, res) => {
-    res.send( sampleAllSummary );
+app.get('/api/reviewcount/:gameId', (req, res) => {
+  const sqlText = 'SELECT SUM(positive) as pos, SUM(negative) as neg '
+                + `FROM reviews_graph WHERE gameid = ${req.params.gameId};`;
+  db.query(sqlText, (err, result) => {
+    if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
+    const row = result[0];
+    const { pos } = row;
+    const { neg } = row;
+    const tot = pos + neg;
+    const per = Math.floor((pos / tot) * 100);
+    res.json(JSON.parse(`{"summary": "${utils.rating(per)}", "percent": ${per}, "positive": ${pos}, "negative": ${neg}, "total": ${tot}}`));
+    // ex. {"summary":"Mixed","percent":64,"positive":3750,"negative":2059,"total":5809}
+  });
 });
 
-app.get('/api/reviewcount/all/:productId', ( req, res) => {
-  res.send( sampleAll );
+app.get('/api/reviewcount/recent/:gameId', (req, res) => {
+  const sqlText = 'SELECT SUM(positive) as pos, SUM(negative) as neg '
+                  + 'FROM reviews_graph WHERE date >= CURDATE()-30 AND date <= CURDATE() '
+                  + `AND gameid = ${req.params.gameId};`;
+  db.query(sqlText, (err, result) => {
+    if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
+    const row = result[0];
+    const { pos } = row;
+    const tot = pos + row.neg;
+    const per = Math.floor((pos / tot) * 100);
+    res.json(JSON.parse(`{"summary": "${utils.rating(per)}", "percent": ${per}, "total": ${tot}}`));
+    // ex. {"summary":"Mixed","percent":63,"total":393}
+  });
 });
 
-app.get('/api/reviewcount/recent/summary/:productId', ( req, res) => {
-  res.send( sampleRecentSummary );
+app.get('/api/reviewcount/detail/:gameId', (req, res) => {
+  const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-01\' ) as month, '
+              + 'SUM(positive) as pos, SUM(negative) as neg FROM reviews_graph '
+              + `WHERE gameid = ${req.params.gameId} GROUP BY month ORDER BY month;`;
+  db.query(sqlText, (err, result) => {
+    if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
+    res.json(JSON.parse(`{"detail": [${result.map((row) => `{"month": "${row.month}", "positive": ${row.pos}, "negative": ${row.neg} }`).slice(0, -1)}]}`));
+    // ex. {"detail":[{"month":"2019-06-01","pos":21,"neg":7},{},...]}
+  });
 });
 
-app.get('/api/reviewcount/recent/:productId', ( req, res) => {
-  res.send( sampleRecent );
+app.get('/api/reviewcount/recent/detail/:gameId', (req, res) => {
+  const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-\', LPAD( Day(date), 2, \'0\') ) as day, '
+                + 'SUM(positive) as pos, SUM(negative) as neg '
+                + 'FROM reviews_graph WHERE date >= CURDATE()-30 AND date <= CURDATE() '
+                + `AND gameid = ${req.params.gameId} GROUP BY day ORDER BY day;`;
+  db.query(sqlText, (err, result) => {
+    if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
+    res.json(JSON.parse(`{"detail": [${result.map((row) => `{"day": "${row.day}", "positive": ${row.pos}, "negative": ${row.neg} }`).slice(0, -1)}]}`));
+    // ex. {"detail":[{"day":"2020-06-01","pos":16,"neg":4},{},...]}
+  });
 });
-
-var sampleAllSummary = { summary: 'Positive', total: 77856 }
-var sampleRecentSummary = { summary: 'Very Positive', total: 246 }
-
-// converts from MySQL DATETIME: {2019-10-31 0:00:00}
-
-var sampleAll = { summary: 'Positive', total: 77856, detail: [
-	{month: '2019-10-01 0:00:00', positive: 4720, negative: 1591},
-  {month: '2019-11-01 0:00:00', positive: 5980, negative: 1042} ]}
-
-var sampleRecent = { summary: 'Very Positive', total: 246, detail: [
-  {month: '2020-07-01 0:00:00', positive: 133, negative: 0},
-  {month: '2020-07-02 0:00:00', positive: 113, negative: 3} ]}  
