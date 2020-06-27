@@ -1,5 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Reviews from './components/graph.jsx';
+import Graph from './components/graph';
 
-ReactDOM.render(<Graph/>, document.getElementById('graph'))
+ReactDOM.render(<Graph />, document.getElementById('graph'));
