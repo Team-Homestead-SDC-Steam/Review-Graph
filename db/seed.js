@@ -54,15 +54,19 @@ const sql = [
 
 console.log('Beginning seed script for reviews_graph');
 
-// convert this array of SQL statements into a set of ordered Promises
+// convert sql array to Promises and run in order
 Promise.all(
-  sql.map((sqlText) => new Promise(() => {
-    db.query(sqlText, (err) => {
-      if (err) throw err;
+  sql.map((sqlText) => {
+    // eslint-disable-next-line no-new
+    new Promise(() => {
+      db.query(sqlText, (err) => {
+        // console.log('\nExecuting sql: ' + sqlText + '\n');
+        if (err) throw err;
+      });
     });
-  })),
+    return 'Complete';
+  }),
 )
   .then(() => { console.log('Data generated successfully.'); })
-  .catch((err) => { console.error(err.message); });
-
-db.end(() => { console.log('Connection closed.'); });
+  .catch((error) => { console.error(error.message); })
+  .then(() => { db.end(() => { console.log('Connection closed.'); }); });
