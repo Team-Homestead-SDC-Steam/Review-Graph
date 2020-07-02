@@ -1,9 +1,10 @@
 import React from 'react';
-export default class Graph extends React.Component {
+
+export default class SummaryOverall extends React.Component {
   constructor() {
     super();
     this.state = {
-      data: { detail: [{ month: 'No reviews for this game' }] },
+      data: { summary: 'No reviews for this game', percent: 100, total: 0 },
     };
   }
 
@@ -19,20 +20,24 @@ export default class Graph extends React.Component {
 
   render() {
     const { data } = this.state;
-    const tip = `${data.percent} of the ${data.total} user reviews for this game are positive.`;
+    const tip = `${data.percent}% of the ${data.total} user reviews for this game are positive.`;
+
+    function thousands(num)
+    {
+      const numParts = num.toString().split('.');
+      numParts[0] = numParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return numParts.join('.');
+    }
     return (
       <div>
-        <h1>Graph dataset</h1>
+        <h2>Overall (Summary)</h2>
         <div>
-          <h2>
-            Overall Reviews:
-          </h2>
           <span title={tip}>
             {data.summary}
             &nbsp;
           </span>
           (
-          {data.total}
+          {thousands(data.total)}
           &nbsp;reviews)&nbsp;
           <span title="This summary uses only reviews written by customers that purchased the game directly from Steam.">
             ?

@@ -26,7 +26,7 @@ app.get('/api/reviewcount/:gameId', (req, res) => {
 
 app.get('/api/reviewcount/recent/:gameId', (req, res) => {
   const sqlText = 'SELECT SUM(positive) as pos, SUM(negative) as neg '
-                  + 'FROM reviews_graph WHERE date >= CURDATE()-30 AND date <= CURDATE() '
+                  + 'FROM reviews_graph WHERE date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY)  '
                   + `AND gameid = ${req.params.gameId};`;
   db.query(sqlText, (err, result) => {
     if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
@@ -51,9 +51,10 @@ app.get('/api/reviewcount/detail/:gameId', (req, res) => {
 });
 
 app.get('/api/reviewcount/recent/detail/:gameId', (req, res) => {
+  // const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-\', LPAD( Day(date), 2, \'0\') ) as day '
   const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-\', LPAD( Day(date), 2, \'0\') ) as day, '
                 + 'SUM(positive) as pos, SUM(negative) as neg '
-                + 'FROM reviews_graph WHERE date >= CURDATE()-30 AND date <= CURDATE() '
+                + 'FROM reviews_graph WHERE date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY) '
                 + `AND gameid = ${req.params.gameId} GROUP BY day ORDER BY day;`;
   db.query(sqlText, (err, result) => {
     if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
@@ -61,3 +62,9 @@ app.get('/api/reviewcount/recent/detail/:gameId', (req, res) => {
     // ex. {"detail":[{"day":"2020-06-01","pos":16,"neg":4},{},...]}
   });
 });
+
+
+// SELECT SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-01\' ) as month
+// FROM reviews_graph 
+// WHERE date <= CURDATE() AND date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY) 
+// AND gameid = 98;

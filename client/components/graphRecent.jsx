@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class Graph extends React.Component {
+export default class GraphRecent extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -9,7 +9,7 @@ export default class Graph extends React.Component {
   }
 
   componentDidMount() {
-    fetch('http://localhost:3001/api/reviewcount/detail/98')
+    fetch('http://localhost:3001/api/reviewcount/recent/detail/98')
       .then(response => response.json())
       .then(json => {
         this.setState({ data: json });
@@ -18,20 +18,20 @@ export default class Graph extends React.Component {
 
   render() {
     const { data } = this.state;
-    const months = data.detail.map((month) => (
+    const days = data.detail.map((day) => (
       <div>
-        {month.month}
+        {day.day}
         : positive:
-        {month.positive}
+        {day.positive}
         , negative:
-        {month.negative}
+        {day.negative}
       </div>
     ));
     return (
       <div>
-        <h1>Graph dataset</h1>
+        <h2>Recent (Graph)</h2>
         <div>
-          { months }
+          { days }
         </div>
       </div>
     );
