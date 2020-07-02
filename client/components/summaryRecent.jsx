@@ -9,7 +9,8 @@ export default class SummaryRecent extends React.Component {
   }
 
   componentDidMount() {
-    fetch('http://localhost:3001/api/reviewcount/recent/98')
+    const { game } = this.props;
+    fetch(`http://localhost:3001/api/reviewcount/recent/${game}`)
       .then(response => response.json())
       .then(json => {
         this.setState({ data: json });

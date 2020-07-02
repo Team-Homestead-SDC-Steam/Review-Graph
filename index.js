@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const express = require('express');
+const path = require('path');
 const db = require('./db/connection.js');
 const utils = require('./utils.js');
 
@@ -8,6 +9,10 @@ const port = 3001;
 
 app.listen(port, () => console.log(`Steam reviews service. listening at http://localhost:${port}`));
 app.use(express.static('./client/dist'));
+
+app.get('/game/:gameId', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+});
 
 app.get('/api/reviewcount/:gameId', (req, res) => {
   const sqlText = 'SELECT SUM(positive) as pos, SUM(negative) as neg '

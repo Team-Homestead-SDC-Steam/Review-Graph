@@ -4,12 +4,13 @@ export default class GraphOverall extends React.Component {
   constructor() {
     super();
     this.state = {
-      data: { detail: [{ month: 'No reviews for this game' }] },
+      data: { detail: [] },
     };
   }
 
   componentDidMount() {
-    fetch('http://localhost:3001/api/reviewcount/detail/98')
+    const { game } = this.props;
+    fetch(`http://localhost:3001/api/reviewcount/detail/${game}`)
       .then(response => response.json())
       .then(json => {
         this.setState({ data: json });

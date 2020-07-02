@@ -6,7 +6,10 @@ import GraphOverall from './graphOverall';
 import SummaryRecent from './summaryRecent';
 import GraphRecent from './graphRecent';
 
-ReactDOM.render(<SummaryOverall />, document.getElementById('summaryOverall'));
-ReactDOM.render(<GraphOverall />, document.getElementById('graphOverall'));
-ReactDOM.render(<SummaryRecent />, document.getElementById('summaryRecent'));
-ReactDOM.render(<GraphRecent />, document.getElementById('graphRecent'));
+const slashes = window.location.href.split('/');
+const gameid = slashes[slashes.length - 1].split('?')[0].split('#')[0];
+
+ReactDOM.render(<SummaryOverall game={gameid} />, document.getElementById('summaryOverall'));
+ReactDOM.render(<GraphOverall game={gameid} />, document.getElementById('graphOverall'));
+ReactDOM.render(<SummaryRecent game={gameid} />, document.getElementById('summaryRecent'));
+ReactDOM.render(<GraphRecent game={gameid} />, document.getElementById('graphRecent'));

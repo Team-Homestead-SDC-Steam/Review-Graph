@@ -1,15 +1,16 @@
 import React from 'react';
 
 export default class SummaryOverall extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       data: { summary: 'No reviews for this game', percent: 100, total: 0 },
     };
   }
 
   componentDidMount() {
-    fetch('http://localhost:3001/api/reviewcount/98')
+    const { game } = this.props;
+    fetch(`http://localhost:3001/api/reviewcount/${game}`)
       .then(response => response.json())
       .then(json => {
         this.setState({ data: json });
@@ -22,8 +23,7 @@ export default class SummaryOverall extends React.Component {
     const { data } = this.state;
     const tip = `${data.percent}% of the ${data.total} user reviews for this game are positive.`;
 
-    function thousands(num)
-    {
+    function thousands(num) {
       const numParts = num.toString().split('.');
       numParts[0] = numParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
       return numParts.join('.');
