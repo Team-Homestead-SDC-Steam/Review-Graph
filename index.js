@@ -56,7 +56,6 @@ app.get('/api/reviewcount/detail/:gameId', (req, res) => {
 });
 
 app.get('/api/reviewcount/recent/detail/:gameId', (req, res) => {
-  // const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-\', LPAD( Day(date), 2, \'0\') ) as day '
   const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-\', LPAD( Day(date), 2, \'0\') ) as day, '
                 + 'SUM(positive) as pos, SUM(negative) as neg '
                 + 'FROM reviews_graph WHERE date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY) '
@@ -68,8 +67,7 @@ app.get('/api/reviewcount/recent/detail/:gameId', (req, res) => {
   });
 });
 
-
 // SELECT SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-01\' ) as month
-// FROM reviews_graph 
-// WHERE date <= CURDATE() AND date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY) 
+// FROM reviews_graph
+// WHERE date <= CURDATE() AND date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY)
 // AND gameid = 98;
