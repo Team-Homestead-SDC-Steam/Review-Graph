@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import SummaryOverall from './summaryOverall';
-import GraphOverall from './graphOverall';
-import SummaryRecent from './summaryRecent';
-import GraphRecent from './graphRecent';
+import SummaryOverall from './SummaryOverall';
+import GraphOverall from './GraphOverall';
+import SummaryRecent from './SummaryRecent';
+import GraphRecent from './GraphRecent';
 
 const slashes = window.location.href.split('/');
 const gameid = slashes[slashes.length - 1].split('?')[0].split('#')[0];
