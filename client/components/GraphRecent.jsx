@@ -11,7 +11,7 @@ export default class GraphRecent extends React.Component {
   componentDidMount() {
     // eslint-disable-next-line react/prop-types
     const { game } = this.props;
-    fetch(`http://localhost:3002/api/reviewcount/recent/detail/${game}`)
+    fetch(`/api/reviewcount/recent/detail/${game}`)
       .then((response) => response.json())
       .then((json) => {
         this.setState({ data: json });
