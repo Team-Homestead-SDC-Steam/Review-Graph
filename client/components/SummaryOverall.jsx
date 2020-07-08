@@ -11,7 +11,7 @@ export default class SummaryOverall extends React.Component {
   componentDidMount() {
     // eslint-disable-next-line react/prop-types
     const { game } = this.props;
-    fetch(`http://localhost:3001/api/reviewcount/${game}`)
+    fetch(`http://localhost:3002/api/reviewcount/${game}`)
       .then((response) => response.json())
       .then((json) => {
         this.setState({ data: json });
