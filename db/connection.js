@@ -1,4 +1,4 @@
-onst mysql = require('mysql');
+const mysql = require('mysql');
 const config = require('./config');
 
 config.database = 'steam';
