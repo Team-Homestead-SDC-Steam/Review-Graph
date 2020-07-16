@@ -1,6 +1,7 @@
 const mysql = require('mysql');
 const config = require('./config');
 
+config.database = 'steam';
 const connection = mysql.createConnection(config);
 
 connection.connect((err) => {
