@@ -10,7 +10,7 @@ const port = 3002;
 app.listen(port, () => console.log(`Steam reviews service. listening at http://localhost:${port}`));
 app.use(express.static('./client/dist'));
 
-app.get('/game/:gameId', (req, res) => {
+app.get('/app/:gameId', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
 
