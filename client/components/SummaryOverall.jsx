@@ -11,11 +11,13 @@ export default class SummaryOverall extends React.Component {
   componentDidMount() {
     // eslint-disable-next-line react/prop-types
     const { game } = this.props;
-    fetch(`/api/reviewcount/${game}`)
-      .then((response) => response.json())
-      .then((json) => {
-        this.setState({ data: json });
-      });
+    if (game !== '') {
+      fetch(`/api/reviews/${game}`)
+        .then((response) => response.json())
+        .then((json) => {
+          this.setState({ data: json });
+        });
+    }
   }
 
   // {"summary":"Mixed","percent":64,"positive":3750,"negative":2059,"total":5809}
