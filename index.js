@@ -1,12 +1,14 @@
 /* eslint-disable no-console */
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const db = require('./db/connection.js');
 const utils = require('./utils.js');
 
 const app = express();
 const port = 3002;
 
+app.use(cors());
 app.listen(port, () => console.log(`Steam reviews service. listening at http://localhost:${port}`));
 app.use(express.static('./client/dist'));
 
