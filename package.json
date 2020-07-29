@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server",
+    "start-server": "node index.js",
     "seed": "node ../steam-reviews-graph/db/seed.js",
     "build": "webpack -d --watch --mode production",
     "build-server": "webpack --mode production",
