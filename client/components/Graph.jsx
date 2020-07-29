@@ -7,7 +7,7 @@ import GraphRecent from './GraphRecent';
 
 const Graph = () => {
   const slashes = window.location.href.split('/');
-  const gameId = slashes[slashes.length - 1].split('?')[0].split('#')[0] ||;
+  const gameId = slashes[slashes.length - 1].split('?')[0].split('#')[0] || 1;
   let serverRoot = 'http://44.233.13.178:3002';
   // serverRoot = 'http://localhost:3002'; // comment out for prod
 
