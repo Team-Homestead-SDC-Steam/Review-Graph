@@ -10,9 +10,9 @@ export default class GraphOverall extends React.Component {
 
   componentDidMount() {
     // eslint-disable-next-line react/prop-types
-    const { game, server } = this.props;
+    const { game } = this.props;
     if (game !== '') {
-      fetch(`${server}/api/reviews/detail/${game}`)
+      fetch(`/api/reviewscount/detail/${game}`)
         .then((response) => response.json())
         .then((json) => {
           this.setState({ data: json });

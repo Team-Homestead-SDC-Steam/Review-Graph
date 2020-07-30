@@ -16,7 +16,7 @@ app.get('/app/:gameId', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
 
-app.get('/api/reviews/:gameId', (req, res) => {
+app.get('/api/reviewscount/:gameId', (req, res) => {
   if (!req.params.gameId) res.status(400).send('This API requires a game ID (/api/reviews/:gameId)');
   const sqlText = 'SELECT SUM(positive) as pos, SUM(negative) as neg '
                 + `FROM reviews_graph WHERE gameid = ${req.params.gameId};`;
@@ -32,7 +32,7 @@ app.get('/api/reviews/:gameId', (req, res) => {
   });
 });
 
-app.get('/api/reviews/recent/:gameId', (req, res) => {
+app.get('/api/reviewscount/recent/:gameId', (req, res) => {
   if (!req.params.gameId) res.status(400).send('This API requires a game ID (/api/reviews/recent/:gameId)');
   const sqlText = 'SELECT SUM(positive) as pos, SUM(negative) as neg '
                   + 'FROM reviews_graph WHERE date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY)  '
@@ -48,7 +48,7 @@ app.get('/api/reviews/recent/:gameId', (req, res) => {
   });
 });
 
-app.get('/api/reviews/detail/:gameId', (req, res) => {
+app.get('/api/reviewscount/detail/:gameId', (req, res) => {
   if (!req.params.gameId) res.status(400).send('This API requires a game ID (/api/reviews/detail/:gameId)');
   const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-01\' ) as month, '
               + 'SUM(positive) as pos, SUM(negative) as neg FROM reviews_graph '
@@ -60,7 +60,7 @@ app.get('/api/reviews/detail/:gameId', (req, res) => {
   });
 });
 
-app.get('/api/reviews/recent/detail/:gameId', (req, res) => {
+app.get('/api/reviewscount/recent/detail/:gameId', (req, res) => {
   if (!req.params.gameId) res.status(400).send('This API requires a game ID (/api/reviews/recent/detail/:gameId)');
   const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-\', LPAD( Day(date), 2, \'0\') ) as day, '
                 + 'SUM(positive) as pos, SUM(negative) as neg '
