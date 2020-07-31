@@ -12,7 +12,7 @@ export default class SummaryRecent extends React.Component {
     // eslint-disable-next-line react/prop-types
     const { game } = this.props;
     if (game !== '') {
-      fetch(`/api/reviewscount/recent/${game}`)
+      fetch(`/api/reviewcount/recent/${game}`)
         .then((response) => response.json())
         .then((json) => {
           this.setState({ data: json });
