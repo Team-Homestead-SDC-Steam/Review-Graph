@@ -12,7 +12,7 @@ export default class GraphRecent extends React.Component {
     // eslint-disable-next-line react/prop-types
     const { game } = this.props;
     if (game !== '') {
-      fetch(`/api/reviewscount/recent/detail/${game}`)
+      fetch(`/api/reviewcount/recent/detail/${game}`)
         .then((response) => response.json())
         .then((json) => {
           this.setState({ data: json });
