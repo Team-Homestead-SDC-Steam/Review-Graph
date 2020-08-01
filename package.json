@@ -29,7 +29,10 @@
     "mysql": "^2.18.1",
     "nodemon": "^2.0.2",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "sass": "^1.26.10",
+    "sass-loader": "^9.0.2",
+    "style-loader": "^1.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
