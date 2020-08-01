@@ -4,6 +4,7 @@ import SummaryOverall from './SummaryOverall';
 import GraphOverall from './GraphOverall';
 import SummaryRecent from './SummaryRecent';
 import GraphRecent from './GraphRecent';
+import './graph.scss';
 
 const Graph = () => {
   const slashes = window.location.href.split('/');
@@ -11,10 +12,19 @@ const Graph = () => {
 
   return (
     <div>
-      <SummaryOverall game={gameId} />
-      <GraphOverall game={gameId} />
-      <SummaryRecent game={gameId} />
-      <GraphRecent game={gameId} />
+      <h2>CUSTOMER REVIEWS</h2>
+      <div className="leftcol overall summary">
+        <SummaryOverall game={gameId} />
+      </div>
+      <div className="leftcol recent summary">
+        <SummaryRecent game={gameId} />
+      </div>
+      <div className="leftcol overall graph">
+        <GraphOverall game={gameId} />
+      </div>
+      <div className="leftcol recent graph">
+        <GraphRecent game={gameId} />
+      </div>
     </div>
   );
 };

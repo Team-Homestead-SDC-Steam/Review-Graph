@@ -21,22 +21,28 @@ export default class GraphOverall extends React.Component {
   }
 
   render() {
+    const formatDate = (month) => `${new Date(month.month).toLocaleString('default', { month: 'short' })} ${new Date(month.month).getFullYear()}`;
     const { data } = this.state;
     const months = data.detail.map((month) => (
-      <div>
-        {month.month}
-        : positive:
-        {month.positive}
-        , negative:
-        {month.negative}
-      </div>
+      <tr>
+        <td className="date">{formatDate(month)}</td>
+        <td className="negative">
+          <div style={{ width: `${month.negative / 1.5}px` }}>
+            {month.negative}
+          </div>
+        </td>
+        <td className="positive">
+          <div style={{ width: `${month.positive / 1.5}px` }}>
+            {month.positive}
+          </div>
+        </td>
+      </tr>
     ));
     return (
       <div>
-        <h2>Overall (Graph)</h2>
-        <div>
+        <table>
           { months }
-        </div>
+        </table>
       </div>
     );
   }

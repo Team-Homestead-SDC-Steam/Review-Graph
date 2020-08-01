@@ -21,22 +21,28 @@ export default class GraphRecent extends React.Component {
   }
 
   render() {
+    const formatDay = (day) => `${new Date(day.day).toLocaleString('default', { month: 'short' })} ${new Date(day.day).getDate()}`;
     const { data } = this.state;
     const days = data.detail.map((day) => (
-      <div>
-        {day.day}
-        : positive:
-        {day.positive}
-        , negative:
-        {day.negative}
-      </div>
+      <tr>
+        <td className="date">{formatDay(day)}</td>
+        <td className="negative">
+          <div style={{ width: `${day.negative * 4}px` }}>
+            {day.negative}
+          </div>
+        </td>
+        <td className="positive">
+          <div style={{ width: `${day.positive * 4}px` }}>
+            {day.positive}
+          </div>
+        </td>
+      </tr>
     ));
     return (
       <div>
-        <h2>Recent (Graph)</h2>
-        <div>
+        <table>
           { days }
-        </div>
+        </table>
       </div>
     );
   }

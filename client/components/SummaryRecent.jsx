@@ -32,20 +32,18 @@ export default class SummaryRecent extends React.Component {
     }
     return (
       <div>
-        <h2>Recent (Summary)</h2>
-        <div>
-          <span title={tip}>
-            {data.summary}
-            &nbsp;
-          </span>
+        <h3>Recent reviews:</h3>
+        <span className="rating" title={tip}>
+          {data.summary}
+        </span>
+        <span className="count">
           (
           {thousands(data.total)}
-          &nbsp;reviews)&nbsp;
-          <span title="This summary uses only reviews written by customers that purchased the game directly from Steam.">
-            ?
-          </span>
-
-        </div>
+          &nbsp;reviews)
+        </span>
+        <span className="tip" title="This summary uses only reviews written by customers that purchased the game directly from Steam.">
+          ?
+        </span>
       </div>
     );
   }
