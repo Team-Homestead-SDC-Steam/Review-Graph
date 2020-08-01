@@ -41,7 +41,7 @@ export default class SummaryRecent extends React.Component {
           {thousands(data.total)}
           &nbsp;reviews)
         </span>
-        <span className="tip" title="This summary uses only reviews written by customers that purchased the game directly from Steam.">
+        <span className="question" title="This summary uses only reviews written by customers that purchased the game directly from Steam.">
           ?
         </span>
       </div>

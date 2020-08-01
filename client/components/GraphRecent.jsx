@@ -22,17 +22,18 @@ export default class GraphRecent extends React.Component {
 
   render() {
     const formatDay = (day) => `${new Date(day.day).toLocaleString('default', { month: 'short' })} ${new Date(day.day).getDate()}`;
+    const formatFull = (day) => `${new Date(day.day).toLocaleString('default', { month: 'long' })} ${new Date(day.day).getDate()}, ${new Date(day.day).getFullYear()}`;
     const { data } = this.state;
     const days = data.detail.map((day) => (
       <tr>
         <td className="date">{formatDay(day)}</td>
         <td className="negative">
-          <div style={{ width: `${day.negative * 4}px` }}>
+          <div style={{ width: `${day.negative * 4}px` }} title={`${day.negative} Negative (${formatFull(day)})`}>
             {day.negative}
           </div>
         </td>
         <td className="positive">
-          <div style={{ width: `${day.positive * 4}px` }}>
+          <div style={{ width: `${day.positive * 4}px` }} title={`${day.positive} Positive (${formatFull(day)})`}>
             {day.positive}
           </div>
         </td>
