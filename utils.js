@@ -9,6 +9,13 @@ const Utils = {
     { min: 20, text: 'Mostly Negative' },
     { min: 0, text: 'Very Negative' }]
     .find((row) => per >= row.min).text,
+
+  // randomizer that takes arrays or numbers and returns a random element from that range
+  rnd(n) {
+    return Array.isArray(n)
+      ? n[this.rnd(n.length) - 1]
+      : Math.floor(Math.random() * n) + 1;
+  },
 };
 
 module.exports = Utils;
