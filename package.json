@@ -4,12 +4,12 @@
   "description": "Display a graph of summary information about reviews",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server",
-    "start-server": "node index.js",
+    "start": "nodemon ./server/start.js",
+    "start-server": "node ./server/start.js",
     "seed": "node ../steam-reviews-graph/db/start.js",
     "build": "webpack -d --watch --mode production",
     "build-server": "webpack --mode production",
-    "test": "jest",
+    "test": "jest --runInBand",
     "dev:react": "webpack -d --watch"
   },
   "repository": {
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/FEC-Bell/steam-reviews-graph#readme",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "css-loader": "^4.2.0",
     "enzyme": "^3.11.0",
@@ -30,8 +31,11 @@
     "enzyme-to-json": "^3.5.0",
     "express": "^4.17.1",
     "jest": "^26.3.0",
+    "moment": "^2.27.0",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.2",
+    "pg": "^8.3.2",
+    "promise-mysql": "^4.1.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "sass": "^1.26.10",
@@ -49,6 +53,8 @@
     "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-react-hooks": "^4.0.4",
+    "morgan": "^1.10.0",
+    "supertest": "^4.0.2",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.11"
   }
