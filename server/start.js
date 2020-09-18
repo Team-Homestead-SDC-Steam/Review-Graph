@@ -1,6 +1,7 @@
 const morgan = require('morgan');
+const  newrelic = require('newrelic');
 const createApp = require('./index.js');
-const db = require('../db/connection.js');
+const db = require('../postgresql/connection.js');
 
 const PORT = 3002;
 const app = createApp(db);

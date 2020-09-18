@@ -1,13 +1,13 @@
 const { Client } = require('pg');
 
-const client = new Client({
-    user: 'postgres',
+const db = new Client({
+    user: 'steam',
     host: 'localhost',
-    database: 'steam',
+    database: 'reviews_graph',
     password: '',
     port: 5432,
 });
 
-client.connect();
+db.connect();
 
-module.exports = client;
+module.exports = db;
