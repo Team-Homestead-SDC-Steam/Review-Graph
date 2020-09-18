@@ -1,82 +1,145 @@
-/* eslint-disable no-console */
+const db = require('../postgresql/connection.js');
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const utils = require('../utils.js');
 var bodyParser = require('body-parser');
+var moment = require('moment');
 
-function createApp(db) {
+async function getReviewCountByDay(gameId, positive) {
+  let query =
+    `SELECT count(*) as count, reviews.date as day from games, reviews
+      where games.gameId=reviews.associatedGame
+      and gameId=$1
+      and ${positive ? 'reviewScore > 5' : 'reviewScore <= 5'}
+      and reviews.date between now() - interval '1 month' and now()
+      group by day order by day;`;
+
+  const results = await db.query(query, [gameId]);
+  return results.rows.map(row => ({
+    day: moment(row.day).format('YYYY-MM-DD'),
+    count: Number(row.count)
+  }));
+}
+
+async function getReviewCountByMonth(gameId, positive) {
+  let query =
+    `SELECT count(*) as count, date_trunc('month', date) from games, reviews
+      where games.gameId=reviews.associatedGame
+      and gameId=$1
+      and ${positive ? 'reviewScore > 5' : 'reviewScore <= 5'}
+      group by date_trunc('month', date);`
+
+  const results = await db.query(query, [gameId]);
+  return results.rows.map(row => ({
+    month: moment(row.date_trunc).format('YYYY-MM-DD'),
+    count: Number(row.count)
+  }));
+}
+
+function createApp() {
   const app = express();
+  app.use(express.static(path.join(__dirname, '../client/dist')));
   app.use(bodyParser.json());
 
-  app.use(cors());
-  app.use(express.static(path.join(__dirname, '../client/dist')));
+  app.get('/api/reviewcount/:gameId', async (req, res) => {
+    let positive =
+      `SELECT count(*) as count
+      from games, reviews
+      where games.gameId=reviews.associatedGame
+      and gameId=$1
+      and reviewScore > 5;`
 
-  app.get('/app/:gameId', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client', 'dist', 'index.html'));
+    let negative =
+      `SELECT count(*) as count
+      from games, reviews
+      where games.gameId=reviews.associatedGame
+      and gameId=$1
+      and reviewScore <= 5;`
+
+    const positivePromise = db.query(positive, [req.params.gameId]);
+    const negativePromise = db.query(negative, [req.params.gameId]);
+    let [positiveReviews, negativeReviews] = await Promise.all([positivePromise, negativePromise]);
+    let positiveCount = Number(positiveReviews.rows[0].count);
+    let negativeCount = Number(negativeReviews.rows[0].count);
+    let total = positiveCount + negativeCount;
+    let percent = Math.floor((positiveCount/total) * 100);
+    res.status(200).send({summary: utils.rating(percent), percent, positive: positiveCount, negative: negativeCount, total})
   });
 
-  app.get('/api/reviewcount/:gameId', (req, res) => {
-    if (!req.params.gameId) res.status(400).send('This API requires a game ID (/api/reviews/:gameId)');
-    const sqlText = 'SELECT SUM(positive) as pos, SUM(negative) as neg '
-                  + `FROM reviews_graph WHERE gameid = ${req.params.gameId};`;
-    db.query(sqlText, (err, result) => {
-      if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
-      const row = result[0];
-      const { pos } = row;
-      const { neg } = row;
-      const tot = pos + neg;
-      const per = Math.floor((pos / tot) * 100);
-      res.json(JSON.parse(`{"summary": "${utils.rating(per)}", "percent": ${per}, "positive": ${pos}, "negative": ${neg}, "total": ${tot}}`));
-      // ex. {"summary":"Mixed","percent":64,"positive":3750,"negative":2059,"total":5809}
-    });
+  app.get('/api/reviewcount/recent/:gameId', async (req, res) => {
+    let positive =
+      `SELECT count(*) as count
+        from games, reviews
+        where games.gameId=reviews.associatedGame
+        and gameId=$1
+        and reviewScore > 5
+        and reviews.date between now() - interval '1 month' and now();`
+
+    let negative =
+      `SELECT count(*) as count
+      from games, reviews
+      where games.gameId=reviews.associatedGame
+      and gameId=$1
+      and reviewScore <= 5
+      and reviews.date between now() - interval '1 month' and now();`
+
+    const positivePromise = db.query(positive, [req.params.gameId]);
+    const negativePromise = db.query(negative, [req.params.gameId]);
+    let [positiveReviews, negativeReviews] = await Promise.all([positivePromise, negativePromise]);
+    let positiveCount = Number(positiveReviews.rows[0].count);
+    let negativeCount = Number(negativeReviews.rows[0].count);
+    let total = positiveCount + negativeCount;
+    let percent = Math.floor((positiveCount/total) * 100);
+    res.status(200).send({summary: utils.rating(percent), percent, total})
   });
 
-  app.get('/api/reviewcount/recent/:gameId', (req, res) => {
-    if (!req.params.gameId) res.status(400).send('This API requires a game ID (/api/reviews/recent/:gameId)');
-    const sqlText = 'SELECT SUM(positive) as pos, SUM(negative) as neg '
-                    + 'FROM reviews_graph WHERE date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY)  '
-                    + `AND gameid = ${req.params.gameId};`;
-    db.query(sqlText, (err, result) => {
-      if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
-      const row = result[0];
-      const { pos } = row;
-      const tot = pos + row.neg;
-      const per = Math.floor((pos / tot) * 100);
-      res.json(JSON.parse(`{"summary": "${utils.rating(per)}", "percent": ${per}, "total": ${tot}}`));
-      // ex. {"summary":"Mixed","percent":63,"total":393}
-    });
+  app.get('/api/reviewcount/recent/detail/:gameId', async (req, res) => {
+    try {
+      const positivePromise = getReviewCountByDay(req.params.gameId, true);
+      const negativePromise = getReviewCountByDay(req.params.gameId, false);
+      let [positiveReviews, negativeReviews] = await Promise.all([positivePromise, negativePromise]);
+      const results = {};
+      for (let {day, count} of positiveReviews) {
+        results[day] = {day, positive: count, negative: 0};
+      }
+      for (let {day, count} of negativeReviews) {
+        const result = results[day] || {day, positive: 0};
+        results[day] = {...result, negative: count};
+      }
+      res.status(200).send({detail: Object.values(results)});
+    }
+    catch(err) {
+      console.log(err)
+      res.sendStatus(500);
+    }
   });
 
-  app.get('/api/reviewcount/detail/:gameId', (req, res) => {
-    if (!req.params.gameId) res.status(400).send('This API requires a game ID (/api/reviews/detail/:gameId)');
-    const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-01\' ) as month, '
-                + 'SUM(positive) as pos, SUM(negative) as neg FROM reviews_graph '
-                + `WHERE gameid = ${req.params.gameId} GROUP BY month ORDER BY month;`;
-    db.query(sqlText, (err, result) => {
-      if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
-      res.json(JSON.parse(`{"detail": [${result.map((row) => `{"month": "${row.month}", "positive": ${row.pos}, "negative": ${row.neg} }`).slice(0, -1)}]}`));
-      // ex. {"detail":[{"month":"2019-06-01","pos":21,"neg":7},{},...]}
-    });
+  app.get('/api/reviewcount/detail/:gameId', async (req, res) => {
+    try {
+      const positivePromise = getReviewCountByMonth(req.params.gameId, true);
+      const negativePromise = getReviewCountByMonth(req.params.gameId, false);
+      let [positiveReviews, negativeReviews] = await Promise.all([positivePromise, negativePromise]);
+      const results = {};
+      for (let {month, count} of positiveReviews) {
+        results[month] = {month, positive: count, negative: 0};
+      }
+      for (let {month, count} of negativeReviews) {
+        const result = results[month] || {month, positive: 0};
+        results[month] = {...result, negative: count};
+      }
+      res.status(200).send({detail: Object.values(results)});
+    }
+    catch(err) {
+      console.log(err)
+      res.sendStatus(500);
+    }
   });
 
-  app.get('/api/reviewcount/recent/detail/:gameId', (req, res) => {
-    if (!req.params.gameId) res.status(400).send('This API requires a game ID (/api/reviews/recent/detail/:gameId)');
-    const sqlText = 'SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-\', LPAD( Day(date), 2, \'0\') ) as day, '
-                  + 'SUM(positive) as pos, SUM(negative) as neg '
-                  + 'FROM reviews_graph WHERE date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY) '
-                  + `AND gameid = ${req.params.gameId} GROUP BY day ORDER BY day;`;
-    db.query(sqlText, (err, result) => {
-      if (err) { res.status(500).send({ error: 'Internal server error' }); throw err; }
-      res.json(JSON.parse(`{"detail": [${result.map((row) => `{"day": "${row.day}", "positive": ${row.pos}, "negative": ${row.neg} }`).slice(0, -1)}]}`));
-      // ex. {"detail":[{"day":"2020-06-01","pos":16,"neg":4},{},...]}
-    });
-  });
-
-  app.post('/api/reviewcount/:gameId/:date', (req, res) => {
+  app.post('/api/reviewcount/detail/:gameId/:date', (req, res) => {
     db.query(
-      `INSERT INTO reviews_graph SET gameid=?, date=?, positive=?, negative=?`,
-      [req.params.gameId, req.params.date, req.body.positive, req.body.negative],
+      `INSERT INTO reviews(reviewId, date, reviewText, reviewScore, associatedGame) VALUES($1, $2, $3, $4, $5)`,
+      [req.body.reviewId, req.params.date, req.body.reviewText, req.body.reviewScore, req.params.gameId],
       (err, result) => {
         if (err) {
           console.log(err);
@@ -88,10 +151,10 @@ function createApp(db) {
     })
   })
 
-  app.put('/api/reviewcount/:gameId/:date', (req, res) => {
+  app.put('/api/reviewcount/detail/:gameId/:date', (req, res) => {
     db.query(
-      `UPDATE reviews_graph SET positive=?, negative=? WHERE gameid=? and date=?`,
-      [req.body.positive, req.body.negative, req.params.gameId, req.params.date],
+      `UPDATE reviews SET date=$1, reviewText=$2, reviewScore=$3 WHERE reviewId=$4`,
+      [req.params.date, req.body.reviewText, req.body.reviewScore, req.body.reviewId],
       (err, result) => {
         if (err) {
           console.log(err);
@@ -105,43 +168,9 @@ function createApp(db) {
     })
   })
 
-  app.get('/api/reviewcount/:gameId/:date', (req, res) => {
-    db.query(
-      `SELECT * FROM reviews_graph WHERE gameid=? and date=?`,
-      [req.params.gameId, req.params.date],
-      (err, result) => {
-        if (err) {
-          console.log(err);
-          res.sendStatus(500);
-        } else {
-          console.log('Retrieved item');
-          res.status(200).send(result);
-        }
-    })
-  })
 
-  app.delete('/api/reviewcount/:gameId/:date', (req, res) => {
-    db.query(
-      `DELETE FROM reviews_graph WHERE gameid=? AND date=?`,
-      [req.params.gameId, req.params.date],
-      (err, result) => {
-        if (err) {
-          console.log(err);
-          res.sendStatus(500);
-        } else if (result.affectedRows === 0) {
-          res.sendStatus(404);
-        } else {
-          console.log('Deleted item');
-          res.sendStatus(204);
-        }
-    })
-  })
+
   return app;
 }
 
 module.exports = createApp;
-
-// SELECT SELECT CONCAT ( Year(date), \'-\', LPAD( Month(date), 2, \'0\'), \'-01\' ) as month
-// FROM reviews_graph
-// WHERE date <= CURDATE() AND date >= DATE_SUB(CURDATE(),INTERVAL 30 DAY)
-// AND gameid = 98;

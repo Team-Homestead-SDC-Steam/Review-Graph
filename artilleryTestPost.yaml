@@ -1,0 +1,28 @@
+config:
+  target: http://localhost:3002
+  processor: "generateDataForArtillery.js"
+  ensure:
+    p95: 1000
+  phases:
+  - duration: 100
+    arrivalRate: 1
+    name: Warm up phase
+  - duration : 300
+    arrivalRate: 10
+    rampTo: 100
+    name: 10 users per second
+  - duration : 300
+    arrivalRate: 100
+    name: 100 users per second
+scenarios:
+  - flow:
+      - function: "generateRandomData"
+      - post:
+          url: "/api/reviewcount/detail/1/{{date}}"
+          json:
+            reviewId: "{{reviewId}}"
+            reviewText: "{{reviewText}}"
+            reviewScore: "{{reviewScore}}"
+          expect:
+            - statusCode: 201
+      - log: "created"
