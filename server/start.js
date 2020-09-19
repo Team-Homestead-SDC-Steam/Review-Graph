@@ -7,7 +7,6 @@ const db = require('../postgresql/connection.js');
 
 const PORT = 3002;
 // const app = createApp(db);
-// let app;
 // app.use(morgan('dev'));
 
 const clusterWorkerSize = os.cpus().length
@@ -34,7 +33,6 @@ if (clusterWorkerSize > 1) {
   })
 }
 
-// app.use(morgan('dev'));
 
 // app.listen(PORT, () => {
 //   console.log(`listening on port ${PORT}`);
