@@ -8,12 +8,12 @@ config:
     name: Warm up phase
   - duration : 300
     arrivalRate: 3
-    rampTo: 70
-    maxVusers: 70
+    rampTo: 30
+    maxVusers: 30
     name: 12 users per second
   - duration : 300
-    arrivalRate: 70
-    maxVusers: 70
+    arrivalRate: 30
+    maxVusers: 30
     name: 100 users per second
   payload:
       path: "gameIds.csv"
